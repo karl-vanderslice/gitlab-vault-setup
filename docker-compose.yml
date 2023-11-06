@@ -9,15 +9,12 @@ services:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://gitlab.lab.local:18000'
         gitlab_rails['gitlab_shell_ssh_port'] = 2224
-        gitlab_rails['initial_license_file'] = '/run/secrets/gitlab_license'
         gitlab_rails['initial_root_password'] = 'Vandelay1234'
     ports: 
       - "18000:18000"
       - "18222:2224"
     networks:
       - internal
-    secrets:
-      - gitlab_license
     volumes:
       - "gitlab_config:/etc/gitlab"
       - "gitlab_logs:/var/log/gitlab"
@@ -33,9 +30,16 @@ services:
     networks:
       - internal
 
-secrets:
-  gitlab_license:
-    environment: 
+  vault-enterprise:
+    image: docker.io/hashicorp/vault-enterprise:latest
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_LICENSE: ${VAULT_LICENSE}
+    networks:
+      - internal
+    ports:
+      - 8200:8200
+    privileged: true
 
 networks:
   internal: {}
